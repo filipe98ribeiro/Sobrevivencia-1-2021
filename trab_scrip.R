@@ -20,7 +20,7 @@ tabela
 ################################################## diferença percentual entre votos reps e dems 
 
 summary(dados$pol_compet)
-hist(dados$pol_compet)
+hist(dados$pol_compet,col = "gray",xlab = "Diferença percentual entre votos republicanos e democratas ",ylab = "Frequência",main = "")
 var(dados$pol_compet)
 skewness(dados$pol_compet) ## Assimetrica a direita 
 kurtosis(dados$pol_compet) ## leptocúrtica
@@ -29,14 +29,14 @@ kurtosis(dados$pol_compet) ## leptocúrtica
 
 summary(dados$citiz_ideol)
 var(dados$citiz_ideol)
-hist(dados$citiz_ideol)
+hist(dados$citiz_ideol,col = "gray",xlab = "Ideologia dos cidadãos",ylab = "Frequência",main = "")
 skewness(dados$citiz_ideol) # a direita 
 kurtosis(dados$citiz_ideol) ## platicurtica 
 
 ####################################################### mensuração da ideologia governo 
 summary(dados$gov_ideol)
 var(dados$gov_ideol)
-hist(dados$gov_ideol)
+hist(dados$gov_ideol,col = "gray",xlab = "Ideologia do Governo",ylab = "Frequência",main = "")
 skewness(dados$gov_ideol) # a esquerda 
 kurtosis(dados$gov_ideol) # platicurtica 
 
@@ -46,7 +46,7 @@ kurtosis(dados$gov_ideol) # platicurtica
 
 summary(dados$leg_profes)
 var(dados$leg_profes)
-hist(dados$leg_profes)
+hist(dados$leg_profes,col = "gray",xlab = "Profisionalismo legislativo",ylab = "Frequência",main = "")
 skewness(dados$leg_profes) # a direita 
 kurtosis(dados$leg_profes) # leptocúrtica 
 
@@ -54,9 +54,10 @@ kurtosis(dados$leg_profes) # leptocúrtica
 
 summary(dados$pop)
 var(dados$pop)
-hist(dados$pop)
+hist(dados$pop,col = "gray",xlab = 'População',ylab = "Frequência",main = "")
 skewness(dados$pop) # a direita 
 kurtosis(dados$pop) # leptocúrtica 
+
 
 
 
