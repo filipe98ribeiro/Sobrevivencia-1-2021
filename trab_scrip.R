@@ -326,16 +326,11 @@ v1$convergence
 (alphaWE<-v1$par[2])
 (a<-v1$par[3])
 
-
-## Verificando ajuste com FunÃ§Ã£o de sobrevivÃªncia
-sWE<-1-(1-exp(-(time/alphaWE)^gammaWE))^a
-
-## AIC, AICc e BIC
 pWE <- 3
 n <- 48
 AICWE<- -2*(-v1$value)+2*pWE
 AICcWE<-AICWE+(2*pWE*(pWE+1))/(n-pWE-1)
-BICWE <- -2*(-v1$value)+pWE*log(n)
+BICWE<- -2*(-v1$value)+pWE*log(n)
 (medidasWexp<-cbind(AICWE,AICcWE,BICWE))
 
 medidasexp
