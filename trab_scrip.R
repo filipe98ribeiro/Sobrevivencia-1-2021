@@ -322,7 +322,7 @@ veroWE <- function(theta, tempo, censura){
 
 v1$convergence
 
-(gammaWE<-v1$par[1])
+(gamaWE<-v1$par[1])
 (alphaWE<-v1$par[2])
 (a<-v1$par[3])
 
@@ -348,7 +348,7 @@ swe<-exp(-(time/alphawe)^gamawe) ##sobrev da weibull
 sexp<-exp(-(time/alphaexp)) ## sobrev da exponencial
 slognorm<-pnorm((-log(time)+mi)/sigma) ##sobrev da log-normal
 sloglogi<-1/(1+(time/alphall)^gamall) ##sobrev da log-logística
-sWE<-1-(1-exp(-(time/alphaWE)^gammaWE))^a ##sobrev da weibull exponencializada
+sWE<-1-(1-exp(-(time/alphaWE)^gamaWE))^a ##sobrev da weibull exponencializada
 
 plot(KM,conf.int=F, xlab="Tempo", ylab="S(t)",mark.time = T)
 lines(c(0,time),c(1,swe),lty=2,col=2)
