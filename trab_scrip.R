@@ -247,3 +247,120 @@ TTT(dados$tempo[dados$pop<=4391767])
 TTT(dados$tempo[dados$pop>4391767])
 
 survdiff(Surv(tempo,cens)~ppop, data = dados, rho= 1)
+
+## Weibull
+mwe <- survreg(Surv((tempo+0.01),cens)~1, data=dados, dist = "weibull") # dÃ¡ erro se nÃ£o somar 0.01
+summary(mwe)
+
+(alphawe<-exp(mwe$coefficients[1]))
+(gamawe<-1/mwe$scale)
+
+pwe<-2
+n<-nrow(dados)
+
+AICwe<-(-2*mwe$loglik[1])+(2*pwe)
+AICcwe<-AICwe + ((2*pwe*(pwe+1))/(n-pwe-1))
+BICwe<-(-2*mwe$loglik[1]) + pwe*log(n)
+(medidaswe<-cbind(AICwe,AICcwe,BICwe))
+
+## Exponencial
+mexp <- survreg(Surv((tempo+0.01),cens)~1, data=dados, dist = "exponential") 
+summary(mexp)
+
+(alphaexp<-exp(mexp$coefficients[1]))
+
+pexp<-1
+n<-nrow(dados)
+
+AICexp<-(-2*mexp$loglik[1])+(2*pexp)
+AICcexp<-AICexp + ((2*pexp*(pexp+1))/(n-pexp-1))
+BICexp<-(-2*mexp$loglik[1]) + pexp*log(n)
+(medidasexp<-cbind(AICexp,AICcexp,BICexp))
+
+## Log-Normal
+mlnorm <- survreg(Surv((tempo+0.01),cens)~1, data=dados, dist = "lognorm") 
+summary(mlnorm)
+
+(mi<-mlnorm$coefficients[1])
+(sigma<-mlnorm$scale)
+
+plnorm<-2
+
+AIClnorm<-(-2*mlnorm$loglik[1])+(2*plnorm)
+AICclnorm<-AIClnorm + ((2*plnorm*(plnorm+1))/(n-plnorm-1))
+BIClnorm<-(-2*mlnorm$loglik[1]) + plnorm*log(n)
+(medidaslnorm<-cbind(AIClnorm,AICclnorm,BIClnorm))
+
+## Log-Logística
+mll<- survreg(Surv((tempo+0.01),cens)~1, data=dados, dist = "loglogistic")
+summary(mll)
+
+(alphall<-exp(mll$coefficients[1]))
+(gamall<-1/mll$scale)
+
+pll<-2
+AICllog<-(-2*mll$loglik[1])+(2*pll)
+AICcllog<-AICllog + ((2*pll*(pll+1))/(n-pll-1))
+BICllog<-(-2*mll$loglik[1]) + pll*log(n)
+(medidasllog<-cbind(AICllog,AICcllog,BICllog))
+
+## Weibull Exponencializada
+tempo <- dados$tempo
+censura <- dados$cens
+
+veroWE <- function(theta, tempo, censura){
+  gama <- theta[1]; alfa <- theta[2]; a <- theta[3]
+  f <- (gama/(alfa^gama))*(tempo^(gama-1))*exp(-((tempo/alfa)^gama))*a*(1-exp(-((tempo/alfa)^gama)))^(a-1)
+  s <- 1-(1-exp(-(tempo/alfa)^gama))^a
+  ln <- sum((censura)*log(f)+(1-censura)*log(s))
+  return(-ln) ## optim minimiza
+}
+
+
+(v1 <- optim(c(1,1,1), veroWE, tempo = dados$tempo + 0.01, 
+             censura = dados$cens, hessian = T))
+
+v1$convergence
+
+(gammaWE<-v1$par[1])
+(alphaWE<-v1$par[2])
+(a<-v1$par[3])
+
+
+## Verificando ajuste com FunÃ§Ã£o de sobrevivÃªncia
+sWE<-1-(1-exp(-(time/alphaWE)^gammaWE))^a
+
+## AIC, AICc e BIC
+pWE <- 3
+n <- 48
+AICWE<- -2*(-v1$value)+2*pWE
+AICcWE<-AICWE+(2*pWE*(pWE+1))/(n-pWE-1)
+BICWE <- -2*(-v1$value)+pWE*log(n)
+(medidasWexp<-cbind(AICWE,AICcWE,BICWE))
+
+medidasexp
+medidasWexp
+medidaswe
+medidaslnorm
+medidasllog
+
+### VERIFICANDO O AJUSTE
+#KM
+time<-KM$time
+skm<-KM$surv ##sobrev de km
+
+swe<-exp(-(time/alphawe)^gamawe) ##sobrev da weibull
+sexp<-exp(-(time/alphaexp)) ## sobrev da exponencial
+slognorm<-pnorm((-log(time)+mi)/sigma) ##sobrev da log-normal
+sloglogi<-1/(1+(time/alphall)^gamall) ##sobrev da log-logística
+sWE<-1-(1-exp(-(time/alphaWE)^gammaWE))^a ##sobrev da weibull exponencializada
+
+plot(KM,conf.int=F, xlab="Tempo", ylab="S(t)",mark.time = T)
+lines(c(0,time),c(1,swe),lty=2,col=2)
+lines(c(0,time),c(1,sexp),lty=2,col=3)
+lines(c(0,time),c(1,slognorm),lty=2,col=4)
+lines(c(0,time),c(1,sloglogi),lty=2,col=5)
+lines(c(0,time),c(1,sWE),lty=2,col=6)
+legend(11,1,lty=c(1,2,3,4,5,6),col=c(1,2,3,4,5,6),c("Kaplan-Meier","Weibull",
+                                                          "Exponencial","Log-Normal",
+                                                          "Log-Logística","Weibull Exponencializada"),bty="n",cex=0.8)
