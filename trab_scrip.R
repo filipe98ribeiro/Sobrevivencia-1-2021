@@ -210,7 +210,7 @@ TTT(dados$tempo[dados$gov_ideol<=50.08])
 TTT(dados$tempo[dados$gov_ideol>50.08])
 
 survdiff(Surv(tempo,cens)~ideolgov, data = dados, rho= 1) ## fiquei na duvida nesse (suposição de proporcionalidade das curvas)
-
+survdiff(Surv(tempo,cens)~ideolgov, data = dados, rho= 0) ## vai os dois na duvida 
 ## leg_profes
 summary(dados$leg_profes)
 
