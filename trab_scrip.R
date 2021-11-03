@@ -1,4 +1,4 @@
-library(e1071);library(GGally);library(patchwork);library(survival)
+library(e1071);library(GGally);library(patchwork);library(survival);library(AdequacyModel)
 dados <-read.csv2("C:/Users/Filipe.Ribeiro/Documents/Sobrevivencia/antibully.csv")
 
 head(dados)
@@ -120,8 +120,8 @@ legend(10,1,lty=c(1,2),c("Democratas","Republicanos"))
 #Funcao risco acumulada KM#
 sobkm=KM$surv
 HHt=-log(sobkm) 
-
-plot(stepfun(KM$time,c(0,HHt[-])),do.points = F,xlab="Tempo", 
+HHt[15] <- 4
+plot(stepfun(KM$time,c(0,HHt)),do.points = F,xlab="Tempo", 
      ylab="H(t)",main = "")
 
 ## funçao risco acumulada nelson alen
