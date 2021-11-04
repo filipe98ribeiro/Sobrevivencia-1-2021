@@ -360,3 +360,240 @@ lines(c(0,time),c(1,sWE),lty=2,col=6)
 legend(11,1,lty=c(1,2,3,4,5,6),col=c(1,2,3,4,5,6),c("Kaplan-Meier","Weibull",
                                                           "Exponencial","Log-Normal",
                                                           "Log-Logística","Weibull Exponencializada"),bty="n",cex=0.8)
+
+
+
+
+##################################### Modelo de Regressão por Locacao e Escala
+dados$tempo <- dados$tempo+1 #o tempo 0 dÃ¡ problema,entÃ£o somamos 1 para considerar que for no 1Âº ano de estudo por exemplo
+tempo <- dados$tempo
+y <- log(tempo)
+
+partido <- factor(dados$Dr)
+pol_compet <- dados$pol_compet
+citiz_ideol <- (dados$citiz_ideol) 
+gov_ideol <- dados$gov_ideol
+leg_profes <- dados$leg_profes
+pop <- dados$pop
+censura <- dados$cens
+
+
+
+### Utilizando o teste de razÃ£o de verossimilhanÃ§a --------------------------------------------------
+## Ajuste modelos de regressÃ£o com uma Ãºnica covariÃ¡vel -------
+
+mregw <- survreg(Surv(( y + 0.01),censura)~1,dist="weibull")
+summary(mregw)
+
+
+### SeleÃ§Ã£o de covariavel
+## Ajustar modelos com uma Ãºnica cov
+
+#### \alpha 50%
+mregw1 <- survreg(Surv(( y + 0.01),censura)~partido,dist="weibull"); summary(mregw1)
+mregw2 <- survreg(Surv(( y + 0.01),censura)~pol_compet,dist="weibull"); summary(mregw2)## rejeita ho
+mregw3 <- survreg(Surv(( y + 0.01),censura)~citiz_ideol,dist="weibull"); summary(mregw3)
+mregw4 <- survreg(Surv(( y + 0.01),censura)~gov_ideol,dist="weibull"); summary(mregw4)# rejeita ho 
+mregw5 <- survreg(Surv(( y + 0.01),censura)~leg_profes,dist="weibull"); summary(mregw5)
+mregw6 <- survreg(Surv(( y + 0.01),censura)~pop,dist="weibull"); summary(mregw6)
+
+
+
+## Passo 2 - Modelo com todas as covariaveis significativas no passo 1
+
+mregwT <- survreg(Surv(( y + 0.01),censura)~pol_compet + gov_ideol
+                  , dist="weibull"  )
+summary(mregwT)
+
+## Passo 2.1 - 
+#Excluindo covariaveis nao significativas no passo 2, 
+#uma de cada vez - nivel 45% (pol_compet)
+
+mregwT1 <- survreg(Surv(( y + 0.01),censura)~ gov_ideol
+                   , dist="weibull"  )
+summary(mregwT1)
+
+# TRV
+
+lnorm <- mregwT1$log[2] # modelo sem pol_compet
+lnorm1 <- mregwT$log[2] #modelo com pol_compet
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# NREJEITA H0 -> Modelo mais completo 
+
+##  Excluindo covariaveis nao significativas no passo 2, 
+#uma de cada vez - nivel 45% (gov_ideol)
+
+mregwT2 <- survreg(Surv(( y + 0.01),censura)~ pol_compet
+                   , dist="weibull"  )
+summary(mregwT2)
+
+# TRV
+
+lnorm <- mregwT2$log[2] # modelo sem gov_ideol
+lnorm1 <- mregwT$log[2] #modelo com gov_ideol
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+#  N REJEITA H0 -> Modelo mais simples
+
+## Passo 2.1 - Excluindo covariaveis nao significativas no passo 2, 
+#uma de cada vez - nivel 45% (gov_ideol e citiz-ideol)
+
+summary(mregw)
+
+
+lnorm <- mregw$log[2] # modelo sem gov_ideol e citiz-ideol
+lnorm1 <- mregwT$log[2] #modelo com gov_ideol e citiz-ideol
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+#  REJEITA H0 -> Modelo mais completo 
+
+
+# FIM PASSO 2
+#modelo atual com pol_compet
+modatual <- survreg(Surv(( y + 0.01),censura)~ pol_compet
+                    , dist="weibull"  )
+
+
+# passo 3 - adicionar covariaveis retirada uma a uma, 
+# para verificar se realmente não são significativas
+
+mregw3 <-  survreg(Surv(( y + 0.01),censura)~ pol_compet + gov_ideol
+                         , dist="weibull"  )
+
+lnorm <- modatual$log[2] # modelo simples
+lnorm1 <- mregw3$log[2] #modelo com gov_ideol
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# N REJEITOU H0
+# mantem modelo com apenas pol_compet
+
+
+### passo 4 - incluir covariaveis nao significativas no passo 1
+
+mregw4 <- survreg(Surv(( y + 0.01),censura)~ pol_compet + partido
+                        , dist="weibull"  )
+lnorm <- modatual$log[2] # modelo simples
+lnorm1 <- mregw4$log[2] #modelo com partido
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# N REJEITA :modelo mais simples
+
+mregw5 <- survreg(Surv(( y + 0.01),censura)~ pol_compet + citiz_ideol
+                  , dist="weibull"  )
+lnorm <- modatual$log[2] # modelo simples
+lnorm1 <- mregw5$log[2] #modelo com citiz_ideol
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# N REJEITA :modelo mais simples
+
+
+mregw6 <- survreg(Surv(( y + 0.01),censura)~ pol_compet + leg_profes
+                  , dist="weibull"  )
+lnorm <- modatual$log[2] # modelo simples
+lnorm1 <- mregw6$log[2] #modelo com leg_profes
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# N REJEITA :modelo mais simples valor proximo de alpha 50%
+
+mregw7 <- survreg(Surv(( y + 0.01),censura)~ pol_compet + pop
+                  , dist="weibull"  )
+lnorm <- modatual$log[2] # modelo simples
+lnorm1 <- mregw7$log[2] #modelo com pop
+
+TRV <- 2*(lnorm1 - lnorm)
+TRV
+1-pchisq(TRV,1)
+
+# N REJEITA :modelo mais simples
+
+######## Residuos cox-snell
+## Modelo final pol compet
+summary(modatual)
+
+mip <- modatual$linear.predictors
+
+##Smod <- 1-pnorm((y-mip)/modatual$scale)
+Smod <- exp(-exp((y-mip)/modatual$scale)) 
+ei <- (-log(Smod))
+
+KMew <- survfit(Surv(ei,censura)~1,conf.int=F)
+te <- KMew$time
+ste <- KMew$surv
+sexp <-exp(-te)
+
+
+par(mfrow=c(1,2))
+plot(ste,sexp,xlab="S(ei):Kaplan-Meier",ylab="S(ei):Exponencial padrão")
+plot(KMew,conf.int=F,xlab="Residuos de Cox-Snell",ylab="Sobrevivencia estimada")
+lines(te,sexp,lty=2,col=2)
+legend(0.6,1.0,lty=c(1,2),col=c(1,2),c("Kaplan-Meier","Exponencial padrão"),cex=0.8,bty="n")
+
+
+res_coxs <- -log(Smod) 
+res_mart <- censura-res_coxs
+res_devi <- sign(res_mart)*(-2*(res_mart+censura*log(censura-res_mart)))^(-1/2)
+
+#Analisando Graficamente
+KMew <- survfit(Surv(res_coxs,censura)~1,conf.int=F) 
+te <- KMew$time
+ste <- KMew$surv
+sexp <- exp(-te) 
+par(mfrow=c(1,2))
+plot(ste,sexp,xlab="S(ei):Kaplan-Meier",ylab="S(ei):Exponencial PadrÃ£o")
+plot(KMew,conf.int=F,xlab="Resíduos de Cox-Snell",ylab="Sobrevivência Estimada")
+lines(te,sexp,col=2,lty=2)
+legend(.7,1,lty=1:2,col=1:2,c("Kaplan-Meier","Exponencial Padrão"),cex=.8,bty="n")
+
+par(mfrow=c(1,1))
+plot(pol_compet,res_mart,xlab="pol_compet",ylab="Resíduos Martingal",pch=censura+1)
+
+
+par(mfrow=c(1,2))
+plot(y,res_devi,xlab="log(tempo)",ylab="Resíduos Deviance",pch=censura+1)
+#plot(y,res_devi,xlab="log(tempo)",ylab="Resíduos Deviance",pch=censura+1,ylim=c(-12,5))
+
+########### residuos deviance
+
+#deviance<-resid(modatual,type = "deviance")
+#pl<-modatual$linear.predictors
+
+#plot(deviance)
+
+
+
+
+########### reds martingual
+
+#martingual <-resid(modatual,type = "mantingale")
+#pl<-modatual$linear.predictors
+
+#plot(martingual)
+
+
+
+#coxsnel <- censura-resid(modatual,type = "martingale")
+
+
+
