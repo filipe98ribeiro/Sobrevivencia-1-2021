@@ -528,6 +528,43 @@ TRV
 
 # N REJEITA :modelo mais simples
 
+
+######## Residuos cox-snell
+## Modelo final pol compet
+summary(modatual)
+
+mip <- modatual$linear.predictors
+alpha<-exp(modatual$coefficients[1])
+gama<-1/modatual$scale
+stw<- exp(-(y/alpha)^gama)
+ekm<-survfit(Surv(y,censura)~1)
+time<-ekm$time
+st<-ekm$surv
+
+
+ei <- stw
+ei <- (-log(stw))
+
+KMew <- survfit(Surv(ei,censura)~1,conf.int=F)
+te <- KMew$time
+ste <- KMew$surv
+sexp <-exp(-te)
+
+
+par(mfrow=c(1,2))
+plot(ste,sexp,xlab="S(ei):Kaplan-Meier",ylab="S(ei):Exponencial padrão")
+plot(KMew,conf.int=F,xlab="Residuos de Cox-Snell",ylab="Sobrevivencia estimada")
+lines(te,sexp,lty=2,col=2)
+legend(0.6,1.0,lty=c(1,2),col=c(1,2),c("Kaplan-Meier","Exponencial padrão"),cex=0.8,bty="n")
+
+
+
+
+
+
+
+############################################################################################################################################## Pra baixo acho q ta errado 
+
 ######## Residuos cox-snell
 ## Modelo final pol compet
 summary(modatual)
